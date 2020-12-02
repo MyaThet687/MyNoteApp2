@@ -36,11 +36,14 @@
 
             <EditText
                 android:id="@+id/edt_title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/txt_date"
                 android:hint="Enter Note Title"/>
             <EditText
+                android:gravity="top"
+                android:hint="Enter a Note"
+                android:id="@+id/edt_note"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/edt_title"
