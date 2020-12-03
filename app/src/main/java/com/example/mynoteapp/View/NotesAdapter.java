@@ -72,7 +72,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHode
 
         void setNote(Note note) {
             txtTitle.setText(note.getTitle());
-            txtDate.setText(note.getTitle());
+            txtDate.setText(note.getDateTime());
             txtNote.setText(note.getNoteText());
         }
     }

@@ -22,6 +22,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NoteListener {
 
     public static final int REQUEST_CODE_ADD_NOTE = 1;
+    public static final int REQUEST_CODE_UPDATE_NOTE = 0;
+    public static final int REQUEST_CODE_SHOW_NOTE = -1;
     RecyclerView recyclerView;
     private List<Note> noteList;
     private NotesAdapter notesAdapter;
@@ -36,10 +38,11 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
         noteList = new ArrayList<>();
         notesAdapter = new NotesAdapter(noteList, this);
         recyclerView.setAdapter(notesAdapter);
+        getNotes(REQUEST_CODE_SHOW_NOTE);
 
     }
 
-    private void getNotes(){
+    private void getNotes(final int requestCode){
         class GetNoteTask extends AsyncTask<Void, Void, List<Note>>{
 
 
@@ -52,19 +55,29 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
             protected void onPostExecute(List<Note> notes) {
                 super.onPostExecute(notes);
                 Log.d("MainActivity", notes.toString());
-                if (noteList.size() == 0){
+               /* if (noteList.size() == 0){
                     noteList.addAll(notes);
                     notesAdapter.notifyDataSetChanged();
                 }else{
                     notes.add(notes.get(0));
                     notesAdapter.notifyItemChanged(0);
+                }*/
+                if (requestCode == REQUEST_CODE_SHOW_NOTE){
+                    noteList.addAll(notes);
+                    notesAdapter.notifyDataSetChanged();
+                }else if (requestCode == REQUEST_CODE_ADD_NOTE){
+                    noteList.add(0, notes.get(0));
+                    notesAdapter.notifyItemInserted(0);
+                    recyclerView.smoothScrollToPosition(0);
+                }else if (requestCode == REQUEST_CODE_UPDATE_NOTE){
+                    noteList.remove(onClickPosition);
+                    noteList.add(onClickPosition,notes.get(onClickPosition));
+                    notesAdapter.notifyItemChanged(onClickPosition);
                 }
-
                 recyclerView.smoothScrollToPosition(0);
             }
 
         }
-
         new GetNoteTask().execute();
     }
 
@@ -76,6 +89,11 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
 
     @Override
     public void OnItemClick(Note note, int position) {
+        onClickPosition = position;
+        Intent intent = new Intent(getApplicationContext(), NoteWriteActivity.class);
+        intent.putExtra("isViewOrUpdate", true);
+        intent.putExtra("NoteObj", note);
+        startActivityForResult(intent, REQUEST_CODE_UPDATE_NOTE);
 
     }
 
@@ -83,8 +101,11 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_ADD_NOTE && resultCode == RESULT_OK){
-            getNotes();
-
+            getNotes(REQUEST_CODE_ADD_NOTE);
+        }else if (requestCode == REQUEST_CODE_UPDATE_NOTE && resultCode == RESULT_OK){
+            if (data != null){
+                getNotes(REQUEST_CODE_UPDATE_NOTE);
+            }
         }
     }
 }

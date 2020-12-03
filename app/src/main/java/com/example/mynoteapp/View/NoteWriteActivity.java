@@ -22,6 +22,7 @@ public class NoteWriteActivity extends AppCompatActivity {
 
     EditText edtTitle, edtNote;
     TextView txtTitle, txtDateTime;
+    Note intentNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,18 @@ public class NoteWriteActivity extends AppCompatActivity {
                 new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a",
                         Locale.getDefault()).format(new Date())
                 );
+
+        if (getIntent().getBooleanExtra("isViewOrUpdate", false)){
+            intentNote = (Note) getIntent().getSerializableExtra("NoteObj");
+            setViewOrUpdate();
+        }
+
+    }
+
+    public void setViewOrUpdate(){
+        edtNote.setText(intentNote.getNoteText());
+        edtTitle.setText(intentNote.getTitle());
+        txtDateTime.setText(intentNote.getDateTime());
     }
 
     public void SaveOnClick(View view) {
@@ -55,6 +68,10 @@ public class NoteWriteActivity extends AppCompatActivity {
         note.setTitle(edtTitle.getText().toString());
         note.setNoteText(edtNote.getText().toString());
         note.setDateTime(txtDateTime.getText().toString());
+
+        if (intentNote != null){
+            note.setId(intentNote.getId());
+        }
 
         class SaveNoteTask extends AsyncTask<Void, Void, Void>{
 
