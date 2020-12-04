@@ -55,11 +55,22 @@
     </ScrollView>
 
     <Button
-        android:layout_width="match_parent"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:id="@+id/note_save"
         android:onClick="SaveOnClick"
         android:text="Save"
+        android:layout_toEndOf="@+id/note_delete"
+        android:layout_margin="20dp"
         android:layout_alignParentBottom="true"/>
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/note_delete"
+        android:layout_margin="20dp"
+        android:text="Delete"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true" />
+
 
 </RelativeLayout>

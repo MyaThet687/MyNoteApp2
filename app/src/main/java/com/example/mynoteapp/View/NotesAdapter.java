@@ -1,5 +1,7 @@
 package com.example.mynoteapp.View;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +15,22 @@ import com.example.mynoteapp.Entities.Note;
 import com.example.mynoteapp.NoteListener;
 import com.example.mynoteapp.R;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHoder> {
 
     private List<Note> note_list;
     private NoteListener noteListener;
+    private List<Note> searchNote;
+    Timer timer;
 
     public NotesAdapter(List<Note> note_list, NoteListener noteListener) {
         this.note_list = note_list;
         this.noteListener = noteListener;
+        searchNote = note_list;
     }
 
     @NonNull
@@ -74,6 +82,37 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHode
             txtTitle.setText(note.getTitle());
             txtDate.setText(note.getDateTime());
             txtNote.setText(note.getNoteText());
+        }
+    }
+    public void SearchNote(final String searchString){
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(searchString.trim().isEmpty()){
+                    note_list = searchNote;
+                }else{
+                    ArrayList<Note> temp = new ArrayList<>();
+                    for (Note note:searchNote){
+                        if (note.getTitle().toLowerCase().contains(searchString.toLowerCase()) || note.getNoteText().toLowerCase().contains(searchString.toLowerCase())){
+                            temp.add(note);
+                        }
+                        note_list = temp;
+                    }
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                        }
+                    });
+                }
+            }
+        }, 500);
+    }
+
+    public void cancelTimer(){
+        if(timer != null){
+            timer.cancel();
         }
     }
 

@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 import com.example.mynoteapp.Database.NoteDatabase;
 import com.example.mynoteapp.Entities.Note;
@@ -28,21 +31,43 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
     private List<Note> noteList;
     private NotesAdapter notesAdapter;
     private int onClickPosition = 1;
+    EditText edtSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.rec_view);
+        edtSearch = findViewById(R.id.edt_view);
+        
         recyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 2));
         noteList = new ArrayList<>();
         notesAdapter = new NotesAdapter(noteList, this);
         recyclerView.setAdapter(notesAdapter);
-        getNotes(REQUEST_CODE_SHOW_NOTE);
+        getNotes(REQUEST_CODE_SHOW_NOTE,false);
+
+        edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                notesAdapter.cancelTimer();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (noteList.size() != 0){
+                    notesAdapter.SearchNote(s.toString());
+                }
+            }
+        });
 
     }
 
-    private void getNotes(final int requestCode){
+    private void getNotes(final int requestCode, final boolean isNoteDelete){
         class GetNoteTask extends AsyncTask<Void, Void, List<Note>>{
 
 
@@ -71,8 +96,12 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
                     recyclerView.smoothScrollToPosition(0);
                 }else if (requestCode == REQUEST_CODE_UPDATE_NOTE){
                     noteList.remove(onClickPosition);
-                    noteList.add(onClickPosition,notes.get(onClickPosition));
-                    notesAdapter.notifyItemChanged(onClickPosition);
+                    if (isNoteDelete){
+                        notesAdapter.notifyItemRemoved(onClickPosition);
+                    }else{
+                        noteList.add(onClickPosition,notes.get(onClickPosition));
+                        notesAdapter.notifyItemChanged(onClickPosition);
+                    }
                 }
                 recyclerView.smoothScrollToPosition(0);
             }
@@ -101,10 +130,10 @@ public class MainActivity extends AppCompatActivity implements NoteListener {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_ADD_NOTE && resultCode == RESULT_OK){
-            getNotes(REQUEST_CODE_ADD_NOTE);
+            getNotes(REQUEST_CODE_ADD_NOTE,false);
         }else if (requestCode == REQUEST_CODE_UPDATE_NOTE && resultCode == RESULT_OK){
             if (data != null){
-                getNotes(REQUEST_CODE_UPDATE_NOTE);
+                getNotes(REQUEST_CODE_UPDATE_NOTE, data.getBooleanExtra("isNoteDeleted",false));
             }
         }
     }
